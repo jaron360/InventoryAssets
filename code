@@ -1,0 +1,135 @@
+import csv
+
+class Format:
+    end = '\033[0m'
+    underline = '\033[4m'
+
+
+print(Format.underline + 'Program Instructions:' + Format.end)
+
+
+print("""        
+Download the excel files containing Tanium, Qualys, and CrowdStrike hostnames in .csv format.
+- In the excel file, the hostnames/asset names/Computer name must be the first column
+- For file inputs, give the full location of the .csv file including the drive.
+
+
+This program will output the assets found in Tanium, but not in the service you choose; it will
+export the missing assets to a text file.
+""")
+
+
+#create the list of assets found in Tanium
+user_input = input(Format.underline + "Give me the location of the excel file with Tanium assets:" + Format.end + " ")
+with open(user_input, 'r') as file:
+
+    reader = csv.reader(file)
+    tanium_items = []
+
+    for row in reader:
+        value = row[0]
+        tanium_items.append(value)
+
+    for i in range(len(tanium_items)):
+        tanium_items[i] = tanium_items[i].upper()
+
+
+#create the list of assets for zscaler
+def zscaler_hostnames():
+    with open(input(Format.underline + """Give me the location of the csv file for zscaler:""" + Format.end + " "), 'r') as file:
+
+        reader = csv.reader(file)
+        zscaler_items = []
+
+        for row in reader:
+            value = row[0]
+            zscaler_items.append(value)
+
+        for i in range(len(zscaler_items)):
+            zscaler_items[i] = zscaler_items[i].upper()
+
+    # Find which hosts are found in Tanium, but not in Zscaler
+    difference1 = list(set(tanium_items).difference(zscaler_items))
+    if len(difference1) != 0:
+        print(f"The following Hosts are found in Tanium, but not Zscaler: {difference1}")
+    else:
+        return 0
+
+    # export results to text file
+    textfile1 = open("ZscalerDifferences.txt", "w")
+    for element in difference1:
+        textfile1.write(element + "\n")
+    textfile1.close()
+
+
+#Create the list of assets for crowdstrike
+def crowdstrike_hostnames():
+    with open(input(Format.underline + """Give me the location of the csv file for crowdstrike:""" + Format.end + " "), 'r') as file:
+
+        reader = csv.reader(file)
+        crowdstrike_items = []
+
+        for row in reader:
+            value = row[0]
+            crowdstrike_items.append(value)
+
+        for i in range(len(crowdstrike_items)):
+            crowdstrike_items[i] = crowdstrike_items[i].upper()
+
+    # Find which values are found in Tanium, but not in CrowdStrike
+    difference2 = list(set(tanium_items).difference(crowdstrike_items))
+    if len(difference2) != 0:
+        print(f"The following Hosts are found in Tanium, but not crowdstrike: {difference2}")
+    else:
+        return 0
+
+    textfile2 = open("CrowdstrikeDifferences.txt", "w")
+    for element in difference2:
+        textfile2.write(element + "\n")
+    textfile2.close()
+
+
+#Create the list of assets for qualys
+def qualys_hostnames():
+    with open(input(Format.underline + """Give me the location of the csv file for qualys:""" + Format.end + " "), 'r') as file:
+
+        reader = csv.reader(file)
+        qualys_items = []
+
+        for row in reader:
+            value = row[0]
+            qualys_items.append(value)
+
+        for i in range(len(qualys_items)):
+            qualys_items[i] = qualys_items[i].upper()
+
+    difference3 = list(set(tanium_items).difference(qualys_items))
+    if len(difference3) != 0:
+        print(f"The following Hosts are found in Tanium, but not Qualys: {difference3}")
+    else:
+        return 0
+
+    textfile3 = open("QualysDifferences.txt", "w")
+    for element in difference3:
+        textfile3.write(element + "\n")
+    textfile3.close()
+
+
+def confusion():
+    print("There may be a typo in your answer, please re-run")
+    exit()
+
+
+comparison = input("""Which list of assets would you like to compare against 
+the tanium list? Qualys, CrowdStrike, or ZScaler? """).lower()
+if comparison == "qualys":
+    qualys_hostnames()
+
+elif comparison == "crowdstrike":
+    crowdstrike_hostnames()
+
+elif comparison == "zscaler":
+    zscaler_hostnames()
+
+else:
+    confusion()
